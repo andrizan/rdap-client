@@ -96,12 +96,59 @@ const RDAPLookup = () => {
       });
     }
 
+    type EntityRole = "registrant" | "technical" | "registrar";
+
     if (data.entities?.length) {
-      output += "\n--- Entities ---\n";
-      data.entities.forEach((entity) => {
-        output += `Handle: ${entity.handle}\nRoles: ${
-          entity.roles?.join(", ") || "N/A"
-        }\n\n`;
+      const groupedEntities = data.entities.reduce((acc, entity) => {
+        entity.roles?.forEach((role) => {
+          if (
+            role === "registrant" ||
+            role === "technical" ||
+            role === "registrar"
+          ) {
+            acc[role] = entity;
+          }
+        });
+        return acc;
+      }, {} as Record<EntityRole, (typeof data.entities)[0]>);
+
+      output += "\n--- Contact Information ---\n";
+
+      ["registrant", "technical", "registrar"].forEach((role) => {
+        const entity = groupedEntities[role as EntityRole];
+        if (entity) {
+          output += `\n${role.toUpperCase()} Contact:\n`;
+          output += `Handle: ${entity.handle}\n`;
+
+          if (entity.vcardArray && Array.isArray(entity.vcardArray[1])) {
+            entity.vcardArray[1].forEach((item: any) => {
+              if (Array.isArray(item) && item.length >= 4) {
+                const [prop, , , value] = item;
+                switch (prop) {
+                  case "fn":
+                    output += `Name: ${value}\n`;
+                    break;
+                  case "org":
+                    output += `Organization: ${value}\n`;
+                    break;
+                  case "email":
+                    output += `Email: ${value}\n`;
+                    break;
+                  case "tel":
+                    output += `Phone: ${value}\n`;
+                    break;
+                  case "adr":
+                    if (Array.isArray(value)) {
+                      output += `Address: ${value
+                        .filter(Boolean)
+                        .join(", ")}\n`;
+                    }
+                    break;
+                }
+              }
+            });
+          }
+        }
       });
     }
 
@@ -149,38 +196,42 @@ const RDAPLookup = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
-      <div
-        className={`text-center transition-all ${searched ? "mt-0" : "mt-40"}`}
-      >
-        <h1 className="text-3xl font-bold mb-4">RDAP Domain Lookup</h1>
-        <div className="flex gap-2 justify-center">
-          <input
-            type="text"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            placeholder="Enter domain name..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onKeyDown={(e) => e.key === "Enter" && fetchRDAP()}
-          />
-          <button
-            onClick={fetchRDAP}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "Searching..." : "Search"}
-          </button>
+    <div className="min-h-screen w-full flex flex-col">
+      <div className="w-full max-w-4xl mx-auto p-6 space-y-6 flex-1">
+        <div
+          className={`text-center transition-all ${
+            searched ? "mt-0" : "mt-40"
+          }`}
+        >
+          <h1 className="text-3xl font-bold mb-4">RDAP Domain Lookup</h1>
+          <div className="flex gap-2 justify-center">
+            <input
+              type="text"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder="Enter domain name..."
+              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => e.key === "Enter" && fetchRDAP()}
+            />
+            <button
+              onClick={fetchRDAP}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? "Searching..." : "Search"}
+            </button>
+          </div>
         </div>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
-
       {result && (
-        <div className="bg-gray-100 p-4 rounded-lg border text-sm font-mono whitespace-pre-wrap">
+        <div className="max-w-4xl mx-auto bg-gray-100 p-4 my-12 rounded-lg border text-sm font-mono whitespace-pre-wrap ">
           {formatRDAPResult(result)}
           <button
             onClick={handleDownload}
@@ -190,6 +241,10 @@ const RDAPLookup = () => {
           </button>
         </div>
       )}
+      <footer className="w-full py-4 text-center text-gray-700 border-t border-gray-200 font-mono">
+        Version:{" "}
+        <span className="font-bold">{__COMMIT_HASH__ || "unknown"}</span>
+      </footer>
     </div>
   );
 };
