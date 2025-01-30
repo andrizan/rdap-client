@@ -22,6 +22,8 @@ type RDAPResponse = {
     eventDate: string;
   }>;
   status?: string[];
+  port43: string;
+  lang: string;
   notices?: Array<{
     title: string;
     description: string[];
@@ -37,6 +39,7 @@ type RDAPResponse = {
   };
   nameservers?: Array<{
     ldhName: string;
+    handle: string;
     ipAddresses?: {
       v4?: string[];
       v6?: string[];
@@ -81,6 +84,8 @@ const RDAPLookup = () => {
     output += `Domain Name: ${data.ldhName || "N/A"}\n`;
     output += `Handle: ${data.handle || "N/A"}\n`;
     output += `Status: ${data.status?.join(", ") || "N/A"}\n`;
+    output += `Whois Server: ${data.port43 || "N/A"}\n`;
+    output += `Lang: ${data.lang || "N/A"}\n`;
 
     if (data.events?.length) {
       output += "\n--- Important Dates ---\n";
@@ -111,7 +116,7 @@ const RDAPLookup = () => {
     if (data.nameservers?.length) {
       output += "\n--- Nameservers ---\n";
       data.nameservers.forEach((ns) => {
-        output += `Nameserver: ${ns.ldhName}\nIPv4: ${
+        output += `Nameserver: ${ns.ldhName}\nHandle: ${ns.handle}\nIPv4: ${
           ns.ipAddresses?.v4?.join(", ") || "N/A"
         }\nIPv6: ${ns.ipAddresses?.v6?.join(", ") || "N/A"}\n\n`;
       });
