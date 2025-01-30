@@ -7,7 +7,7 @@ This project is a web application that serves as an RDAP (Registration Data Acce
 To install the RDAP client, clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/yourusername/rdap-client.git
+git clone https://github.com/andrizan/rdap-client.git
 cd rdap-client
 bun install
 ```
