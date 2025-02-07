@@ -196,21 +196,21 @@ const RDAPLookup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <div className="w-full max-w-4xl mx-auto p-6 space-y-6 flex-1">
         <div
           className={`text-center transition-all ${
             searched ? "mt-0" : "mt-40"
           }`}
         >
-          <h1 className="text-3xl font-bold mb-4">RDAP Domain Lookup</h1>
+          <h1 className="text-3xl font-bold mb-4 text-gray-800">RDAP Domain Lookup</h1>
           <div className="flex gap-2 justify-center">
             <input
               type="text"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               placeholder="Enter domain name..."
-              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none border-gray-300 focus:ring-1 focus:ring-blue-500"
               onKeyDown={(e) => e.key === "Enter" && fetchRDAP()}
             />
             <button
@@ -243,7 +243,7 @@ const RDAPLookup = () => {
       )}
       <footer className="w-full py-4 text-center text-gray-700 border-t border-gray-200 font-mono">
         Version:{" "}
-        <span className="font-bold">{__COMMIT_HASH__ || "unknown"}</span>
+        <span className="font-bold">v1#{__COMMIT_HASH__ || "unknown"}</span>
       </footer>
     </div>
   );
